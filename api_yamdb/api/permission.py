@@ -38,3 +38,9 @@ class AdminPermissionOrReadOnlyPermission(permissions.BasePermission):
         elif (request.user.is_authenticated
               and request.user.is_admin):
             return True
+
+
+class IsAdmin(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.is_superuser or request.user.role == 'Admin'

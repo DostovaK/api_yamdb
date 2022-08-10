@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SingUpSerializer, UserSerializer
-from api.permissions import IsAdmin
+from api.permission import IsAdmin
 from users.models import User
 
 
