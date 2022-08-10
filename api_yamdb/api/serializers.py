@@ -1,13 +1,51 @@
 from rest_framework import serializers
 
 
-from .models import Comment, Review
+from ..reviews.models import Comment, Review, Category, Genre, Title
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('name', 'slug',)
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug',)
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'name',
+            'year',
+            'description',
+            'genre',
+            'category',
+            'rating',
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
-        read_only=True)
+        read_only=True
+    )
     score = serializers.IntegerField(min_value=1, max_value=10)
 
     def validate(self, data):
@@ -27,11 +65,13 @@ class ReviewSerializer(serializers.ModelSerializer):
             'pub_date',
             'author',
             'text',
-            'score')
+            'score',
+        )
         read_only_fields = (
             'id',
             'pub_date',
-            'author')
+            'author',
+        )
         model = Review
 
 
@@ -45,9 +85,11 @@ class CommentSerializer(serializers.ModelSerializer):
             'id',
             'text',
             'author',
-            'pub_date')
+            'pub_date',
+        )
         read_only_fields = (
             'id',
             'pub_date',
-            'author')
+            'author',
+        )
         model = Comment
