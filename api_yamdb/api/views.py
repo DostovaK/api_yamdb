@@ -7,12 +7,51 @@ from rest_framework import filters, permissions, status, viewsets
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,)
 from rest_framework.pagination import PageNumberPagination
-from reviews.models import Review, Title
-from reviews.permission import (
-    AuthorAdminModeratorObjectPermission,)
+from reviews.models import Category, Genre, Review, Title
+from .mixins import CategoryGenreModelMixin, TitleModelMixin
+
+from .filters import TitleFilter
+
+from .permission import (
+    AuthorAdminModeratorObjectPermission,
+    AdminPermissionOrReadOnlyPermission,)
+from django.db.models import Avg
 from api.serializers import (
     CommentSerializer,
-    ReviewSerializer,)
+    GenreSerializer,
+    ReviewSerializer,
+    TitleSerializer,)
+
+
+class TitleViewSet(TitleModelMixin):
+    queryset = Title.objects.order_by('id').annotate(
+        rating=Avg('reviews__score'))
+    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    filter_backends = (django_filters.DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'partial_update'):
+            return TitleSerializer
+        return TitleSerializer
+
+
+class CategoryViewSet(CategoryGenreModelMixin):
+    lookup_field = 'slug'
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', ]
+
+
+class GenreViewSet(CategoryGenreModelMixin):
+    lookup_field = 'slug'
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', ]
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
