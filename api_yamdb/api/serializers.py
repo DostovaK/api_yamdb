@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-
 from ..reviews.models import Comment, Review, Category, Genre, Title
+from users.models import User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -93,3 +93,23 @@ class CommentSerializer(serializers.ModelSerializer):
             'author',
         )
         model = Comment
+
+
+class SingUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Использовать имя "me" в качестве username запрещено!')
+        return value
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = '__all__'

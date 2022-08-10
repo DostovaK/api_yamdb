@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.routers import DefaultRouter
 
 from reviews.views import CommentViewSet, ReviewViewSet
+from .views import  SignUp, UserViewSet
 
 
 from .views import (
@@ -28,5 +29,6 @@ urlpatterns = [
     path('v1/auth/token/', get_token, name='token_obtain_pair'),
     path('v1/auth/email/', send_confirmation_code, name='send_confirmation_code'),
     path('v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
     # надо добавить для аутентификации
 ]
