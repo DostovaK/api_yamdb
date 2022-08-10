@@ -7,19 +7,31 @@ from rest_framework import filters, permissions, status, viewsets
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,)
 from rest_framework.pagination import PageNumberPagination
-from reviews.models import Review, Title
-from reviews.permission import (
+from reviews.models import Category, Genre, Review, Title
+from .permission import (
     AuthorAdminModeratorObjectPermission,)
 from api.serializers import (
     CommentSerializer,
-    ReviewSerializer,)
+    ReviewSerializer,
+    GenreSerializer,
+    TitleSerializer
+    )
+
+from .permission import (
+    AuthorAdminModeratorObjectPermission,
+    AdminPermissionOrReadOnlyPermission)
+from django.db.models import Avg
+
+from .mixins import CategoryGenreModelMixin, TitleModelMixin
+
+from .filters import TitleFilter
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SingUpSerializer, UserSerializer
-from api.permissions import IsAdmin
+from api.permission import IsAdmin
 from users.models import User
 
 
@@ -111,3 +123,35 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class TitleViewSet(TitleModelMixin):
+    queryset = Title.objects.order_by('id').annotate(
+        rating=Avg('reviews__score'))
+    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    filter_backends = (django_filters.DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'partial_update'):
+            return TitleSerializer
+        return TitleSerializer
+
+
+class CategoryViewSet(CategoryGenreModelMixin):
+    lookup_field = 'slug'
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', ]
+
+
+class GenreViewSet(CategoryGenreModelMixin):
+    lookup_field = 'slug'
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', ]
+
+
