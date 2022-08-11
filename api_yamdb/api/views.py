@@ -1,10 +1,10 @@
-import re
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-# from django.db.models import Avg
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 
-# from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, permissions, status, viewsets
 
@@ -16,26 +16,27 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# from api.filters import TitleFilter
+from api.filters import TitleFilter
 
-from api.serializers import (
+from .serializers import (
     CategorySerializer,
     CommentSerializer,
     ReviewSerializer,
     GenreSerializer,
-    # TitleSerializer,
+    TitleSerializer,
     SingUpSerializer,
     TokenSerializer,
     UserSerializer,
-    UserRoleSerializer
-    )
+    UserRoleSerializer,
+    TitleCreateSerializer,)
 
-from api.mixins import CategoryGenreModelMixin, TitleModelMixin
+from .mixins import CategoryGenreModelMixin, TitleModelMixin
 
-from api.permission import (
+from .permission import (
     AuthorAdminModeratorObjectPermission,
     AdminPermissionOrReadOnlyPermission,
-    IsAdminPermission
+    IsAdminPermission, 
+    # AdminOnlyPermission,
 )
 
 from reviews.models import Category, Genre, Review, Title
@@ -54,6 +55,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             Title,
             id=self.kwargs.get('title_id'))
         queryset = title.reviews.order_by('id')
+        # queryset = title.reviews.all()
         return queryset
 
     def perform_create(self, serializer):
@@ -78,6 +80,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             id=self.kwargs.get('review_id'),
             title=self.kwargs.get('title_id'))
         queryset = review.comments.order_by('id')
+        # queryset = review.comments.all()
         return queryset
 
     def perform_create(self, serializer):
@@ -121,7 +124,8 @@ class GetTokenView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminPermission]
+    permission_classes = [IsAdminPermission, ]
+    # permission_classes = [AdminOnlyPermission, ] # четвертый тест проходит норм admin-create-user, но рушит какие-то другие 5
     pagination_class = PageNumberPagination
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
@@ -132,7 +136,7 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['get', 'patch'],
         detail=False,
         url_path='me',
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=[IsAuthenticated, ]
     )
     def users_me(self, request):
         user = request.user
@@ -144,17 +148,17 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-"""class TitleViewSet(TitleModelMixin):
-    queryset = Title.objects.order_by('id').annotate(
-        rating=Avg('reviews__score'))
+class TitleViewSet(TitleModelMixin):
+    queryset = Title.objects.all()
+    # queryset = Title.objects.order_by('id').annotate(rating=Avg('reviews__score'))
     permission_classes = (AdminPermissionOrReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ('create', 'partial_update'):
-            return TitleSerializer
-        return TitleSerializer"""
+            return TitleCreateSerializer
+        return TitleSerializer
 
 
 class CategoryViewSet(CategoryGenreModelMixin):
