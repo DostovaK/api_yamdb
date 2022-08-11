@@ -77,15 +77,13 @@ class Title(models.Model):
     )
     rating = models.IntegerField(
         verbose_name='Рейтинг произведения',
-        null=True,
-        default=None
     )
 
     def __str__(self) -> str:
         return self.name[:SYMBOLS_SHOWN]
 
     class Meta:
-        ordering = ('year',)
+        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 

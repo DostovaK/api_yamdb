@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from rest_framework.validators import UniqueValidator
-
 from reviews.models import Comment, Review, Category, Genre, Title
 from users.models import User
 
@@ -11,6 +9,8 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug',)
+        lookup_field = 'slug'
+
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -40,20 +40,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre',
             'category',
             'rating',
-        )
-
-
-class ReadOnlyTitleSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(
-        source='reviews__score__avg', read_only=True
-    )
-    genre = GenreSerializer(many=True)
-    category = CategorySerializer()
-
-    class Meta:
-        model = Title
-        fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
 
 
@@ -173,3 +159,15 @@ class TitleCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ReadOnlyTitleSerializer(serializers.ModelSerializer):
+    rating = serializers.IntegerField(
+        source='reviews__score__avg', read_only=True
+    )
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
