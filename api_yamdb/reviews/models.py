@@ -66,7 +66,8 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         related_name='titles',
-        verbose_name='Жанр'
+        verbose_name='Жанр',
+        through='GenreTitle'
     )
     category = models.ForeignKey(
         Category,
@@ -75,14 +76,14 @@ class Title(models.Model):
         related_name='titles'
     )
     rating = models.IntegerField(
-        verbose_name='Рейтинг произведения'
+        verbose_name='Рейтинг произведения',
     )
 
     def __str__(self) -> str:
         return self.name[:SYMBOLS_SHOWN]
 
     class Meta:
-        ordering = ('year',)
+        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
