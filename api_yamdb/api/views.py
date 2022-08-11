@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, status, viewsets
 
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -28,15 +28,14 @@ from .serializers import (
     TokenSerializer,
     UserSerializer,
     UserRoleSerializer,
-    TitleCreateSerializer,)
+    ReadOnlyTitleSerializer)
 
 from .mixins import CategoryGenreModelMixin, TitleModelMixin
 
 from .permission import (
     AuthorAdminModeratorObjectPermission,
     AdminPermissionOrReadOnlyPermission,
-    IsAdminPermission, 
-    # AdminOnlyPermission,
+    IsAdminPermission
 )
 
 from reviews.models import Category, Genre, Review, Title
@@ -54,8 +53,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = get_object_or_404(
             Title,
             id=self.kwargs.get('title_id'))
-        queryset = title.reviews.order_by('id')
-        # queryset = title.reviews.all()
+        queryset = title.reviews.all()
         return queryset
 
     def perform_create(self, serializer):
@@ -79,8 +77,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             Review,
             id=self.kwargs.get('review_id'),
             title=self.kwargs.get('title_id'))
-        queryset = review.comments.order_by('id')
-        # queryset = review.comments.all()
+        queryset = review.comments.all()
         return queryset
 
     def perform_create(self, serializer):
@@ -110,7 +107,7 @@ class SignUpView(APIView):
 
 
 class GetTokenView(APIView):
-    def post(self, request):
+    def post(request):
         serializer = TokenSerializer(data=request.data)
         if serializer.is_valid:
             user = User.objects.get(username=serializer.data['username'])
@@ -149,15 +146,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(TitleModelMixin):
-    queryset = Title.objects.all()
-    # queryset = Title.objects.order_by('id').annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.all().annotate(
+        Avg('reviews__score')
+    ).order_by('name')
+    serializer_class = TitleSerializer
     permission_classes = (AdminPermissionOrReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.action in ('create', 'partial_update'):
-            return TitleCreateSerializer
+        if self.action in ('retrieve', 'list'):
+            return ReadOnlyTitleSerializer
         return TitleSerializer
 
 
