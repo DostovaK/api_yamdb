@@ -28,7 +28,8 @@ from .serializers import (
     TokenSerializer,
     UserSerializer,
     UserRoleSerializer,
-    TitleCreateSerializer,)
+    TitleCreateSerializer,
+    ReadOnlyTitleSerializer)
 
 from .mixins import CategoryGenreModelMixin, TitleModelMixin
 
@@ -42,6 +43,14 @@ from .permission import (
 from reviews.models import Category, Genre, Review, Title
 
 from users.models import User
+
+
+
+
+from .permission import (IsAdmin, IsAdminOrReadOnly, IsAdminModeratorOwnerOrReadOnly)
+
+
+
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -149,15 +158,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(TitleModelMixin):
-    queryset = Title.objects.all()
-    # queryset = Title.objects.order_by('id').annotate(rating=Avg('reviews__score'))
-    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    queryset = Title.objects.all().annotate(
+        Avg("reviews__score")
+    ).order_by("name")
+    serializer_class = TitleSerializer
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.action in ('create', 'partial_update'):
-            return TitleCreateSerializer
+        if self.action in ("retrieve", "list"):
+            return ReadOnlyTitleSerializer
         return TitleSerializer
 
 
