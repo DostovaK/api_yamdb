@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from rest_framework.validators import UniqueValidator
+
 from reviews.models import Comment, Review, Category, Genre, Title
 from users.models import User
 
@@ -99,7 +101,7 @@ class SingUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email')
+        fields = ('email', 'username')
 
     def validate_username(self, value):
         if value == 'me':
@@ -108,8 +110,34 @@ class SingUpSerializer(serializers.ModelSerializer):
         return value
 
 
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+    def validate(self, data):
+        username = data.get('username')
+        confirmation_code = data.get('confirmation_code')
+        if not username and not confirmation_code:
+            raise serializers.ValidationError('Заполните обязательные поля')
+        return data
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
+        fields = ('username', 'first_name',
+                  'last_name', 'email',
+                  'bio', 'role')
+
+
+class UserRoleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
         fields = '__all__'
+        read_only_fields = ('role',)
