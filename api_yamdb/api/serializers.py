@@ -63,14 +63,14 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id',
+            #'id',
             'pub_date',
             'author',
             'text',
             'score',
         )
         read_only_fields = (
-            'id',
+            #'id',
             'pub_date',
             'author',
         )
@@ -84,13 +84,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id',
+            # 'id',
             'text',
             'author',
             'pub_date',
         )
         read_only_fields = (
-            'id',
+            # 'id',
             'pub_date',
             'author',
         )
@@ -141,3 +141,19 @@ class UserRoleSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
         read_only_fields = ('role',)
+
+
+class TitleCreateSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        many=True,
+        slug_field='slug',
+        queryset=Genre.objects.all(),)
+    category = serializers.SlugRelatedField(
+        many=False,
+        slug_field='slug',
+        queryset=Category.objects.all(),)
+    
+
+    class Meta:
+        model = Title
+        fields = '__all__'
