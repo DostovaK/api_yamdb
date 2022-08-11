@@ -1,12 +1,14 @@
+from site import USER_BASE
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class User(AbstractUser):
-    USER = 'Пользователь'
-    MODERATOR = 'Модератор'
-    ADMIN = 'Администратор'
+USER = 'Пользователь'
+MODERATOR = 'Модератор'
+ADMIN = 'Администратор'
 
+class User(AbstractUser):
+    
     ROLE_CHOICES = (
         (USER, 'user'),
         (MODERATOR, 'moderator'),
@@ -36,3 +38,6 @@ class User(AbstractUser):
         max_length=50,
         choices=ROLE_CHOICES,
         default=USER)
+    confirmation_code = models.TextField(
+        'Код подтверждения',
+        blank=True)
