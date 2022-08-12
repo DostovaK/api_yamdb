@@ -33,6 +33,7 @@ from .serializers import (
 from .mixins import CategoryGenreModelMixin, TitleModelMixin
 
 from .permission import (
+    AdminOrReadOnly,
     AuthorAdminModeratorObjectPermission,
     AdminPermissionOrReadOnlyPermission,
     IsAdminPermission
@@ -170,7 +171,7 @@ class CategoryViewSet(CategoryGenreModelMixin):
     lookup_field = 'slug'
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    permission_classes = [AdminOrReadOnly,]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', ]
 
@@ -179,6 +180,7 @@ class GenreViewSet(CategoryGenreModelMixin):
     lookup_field = 'slug'
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    # permission_classes = (AdminPermissionOrReadOnlyPermission,)
+    permission_classes = [AdminOrReadOnly,]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', ]
