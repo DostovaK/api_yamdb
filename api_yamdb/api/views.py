@@ -14,7 +14,7 @@ from rest_framework.permissions import (
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from api.filters import TitleFilter
 
@@ -107,13 +107,16 @@ class SignUpView(APIView):
 
 
 class GetTokenView(APIView):
-    def post(request):
+    def post(self, request):
         serializer = TokenSerializer(data=request.data)
-        if serializer.is_valid:
-            user = User.objects.get(username=serializer.data['username'])
-            refresh = RefreshToken.for_user(user)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
+        user = get_object_or_404(User, username=username)
+        if confirmation_code == user.confirmation_code:
+            token = AccessToken.for_user(user)
             return Response(
-                {'token': str(refresh.access_token)},
+                {'token': str(token)},
                 status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -121,23 +124,26 @@ class GetTokenView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminPermission, ]
-    # permission_classes = [AdminOnlyPermission, ] # четвертый тест проходит норм admin-create-user, но рушит какие-то другие 5
     pagination_class = PageNumberPagination
-    lookup_field = 'username'
+    permission_classes = [IsAdminPermission, ]
     filter_backends = (filters.SearchFilter,)
     filter_fields = ('username',)
     search_fields = ('username',)
-    
+    lookup_field = 'username'
+
     @action(
         methods=['get', 'patch'],
         detail=False,
         url_path='me',
-        permission_classes=[IsAuthenticated, ]
-    )
-    def users_me(self, request):
+        permission_classes=[IsAuthenticated, ],
+        serializer_class =UserRoleSerializer)
+        
+    def me(self, request):
         user = request.user
-        serializer = UserRoleSerializer(user, data=request.data, partial=True)
+        if request.method == 'GET':
+            serializer = self.get_serializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         if request.method == 'PATCH':
             serializer.save()
