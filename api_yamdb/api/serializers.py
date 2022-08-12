@@ -118,13 +118,6 @@ class TokenSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'confirmation_code')
 
-    def validate(self, data):
-        username = data.get('username')
-        confirmation_code = data.get('confirmation_code')
-        if not username and not confirmation_code:
-            raise serializers.ValidationError('Заполните обязательные поля')
-        return data
-
 
 class UserSerializer(serializers.ModelSerializer):
 
