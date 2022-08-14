@@ -2,6 +2,28 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.vscode/
+venv/
+.venv
+.vscode
+venv/
+vscode/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover 
+/media
+/media/
+.media
+media/
+.env
+.log
+main.log
+.db
+*.db
+db.
+
 
 # C extensions
 *.so
