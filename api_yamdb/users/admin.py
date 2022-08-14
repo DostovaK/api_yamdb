@@ -13,6 +13,7 @@ class ReviewAdmin(admin.ModelAdmin):
         'last_name',
         'email',
         'bio',
-        'confirmation_code')
-    search_fields = ('username',)
-    list_filter = ('username',)
+        'confirmation_code'
+    )
+    search_fields = ('username', )
+    list_filter = ('username', )

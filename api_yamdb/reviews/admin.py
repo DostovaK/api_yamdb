@@ -11,9 +11,10 @@ class ReviewAdmin(admin.ModelAdmin):
         'text',
         'author',
         'pub_date',
-        'score',)
-    search_fields = ('text',)
-    list_filter = ('pub_date',)
+        'score',
+    )
+    search_fields = ('text', )
+    list_filter = ('pub_date', )
     empty_value_display = '-пусто-'
 
 
@@ -24,10 +25,12 @@ class CommentAdmin(admin.ModelAdmin):
         'review',
         'author',
         'text',
-        'pub_date')
+        'pub_date',
+    )
 
     search_fields = (
         'text',
-        'author')
-    list_filter = ('pub_date',)
+        'author',
+    )
+    list_filter = ('pub_date', )
     empty_value_display = '-пусто-'
