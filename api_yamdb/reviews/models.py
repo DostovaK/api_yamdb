@@ -1,8 +1,8 @@
-from api_yamdb.settings import SYMBOLS_SHOWN
-from .validators import validate_year
-from users.models import User
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+from users.models import User
+from .validators import validate_year
 
 
 class Category(models.Model):
@@ -48,44 +48,44 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """Модель списков произведений."""
     name = models.CharField(
-        max_length=256,
-        verbose_name='Произведение'
+        verbose_name='Название',
+        max_length=200
     )
-    year = models.PositiveSmallIntegerField(
-        validators=[validate_year],
-        verbose_name='Дата релиза'
+    year = models.IntegerField(
+        verbose_name='Дата выхода',
+        validators=[validate_year]
     )
     description = models.TextField(
-        max_length=500,
+        verbose_name='Описание',
         null=True,
-        blank=True,
-        verbose_name='Описание'
+        blank=True
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name='titles',
         verbose_name='Жанр',
         through='GenreTitle'
     )
     category = models.ForeignKey(
         Category,
+        verbose_name='Категория',
         on_delete=models.SET_NULL,
-        null=True,
-        related_name='titles'
+        related_name='titles',
+        null=True
     )
     rating = models.IntegerField(
-        verbose_name='Рейтинг произведения',
+        verbose_name='Рейтинг',
+        null=True,
+        default=None
     )
 
-    def __str__(self) -> str:
-        return self.name[:SYMBOLS_SHOWN]
+    def __str__(self):
+        return self.name
 
     class Meta:
-        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        ordering = ['name']
 
 
 class GenreTitle(models.Model):
@@ -129,6 +129,11 @@ class Review(models.Model):
 
     class Meta:
         ordering = ['pub_date', ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'], name='unique_review'
+            )
+        ]
 
     def __str__(self):
         return self.text
