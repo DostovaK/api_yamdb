@@ -7,6 +7,7 @@ USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
 
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         (USER, 'user'),
@@ -44,10 +45,11 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return self.username
 
-    @property
+    """@property
     def is_moderator(self):
         return self.role == self.MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return self.role == self.ADMIN"""
+# может удалить эти штуки? так и не смогла понять на что они влияют =(

@@ -31,4 +31,3 @@ class CommentAdmin(admin.ModelAdmin):
         'author')
     list_filter = ('pub_date',)
     empty_value_display = '-пусто-'
-

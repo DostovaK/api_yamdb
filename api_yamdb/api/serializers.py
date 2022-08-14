@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from reviews.models import Comment, Review, Category, Genre, Title
 from users.models import User
 
@@ -12,7 +11,6 @@ class CategorySerializer(serializers.ModelSerializer):
         lookup_field = 'slug'
 
 
-
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -22,25 +20,15 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
-        slug_field='slug',
-        many=True,
-        queryset=Genre.objects.all()
+        slug_field='slug', many=True, queryset=Genre.objects.all()
     )
     category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all()
+        slug_field='slug', queryset=Category.objects.all()
     )
 
     class Meta:
         model = Title
-        fields = (
-            'name',
-            'year',
-            'description',
-            'genre',
-            'category',
-            'rating',
-        )
+        fields = '__all__'
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -49,6 +37,21 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True
     )
     score = serializers.IntegerField(min_value=1, max_value=10)
+
+    class Meta:
+        fields = (
+            'id',
+            'pub_date',
+            'author',
+            'text',
+            'score',
+        )
+        read_only_fields = (
+            'id',
+            'pub_date',
+            'author',
+        )
+        model = Review
 
     def validate(self, data):
         title_id = self.context['view'].kwargs.get('title_id')
@@ -61,21 +64,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Повторный отзыв невозможен')
         return data
 
-    class Meta:
-        fields = (
-            #'id',
-            'pub_date',
-            'author',
-            'text',
-            'score',
-        )
-        read_only_fields = (
-            #'id',
-            'pub_date',
-            'author',
-        )
-        model = Review
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -84,13 +72,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            # 'id',
+            'id',
             'text',
             'author',
             'pub_date',
         )
         read_only_fields = (
-            # 'id',
+            'id',
             'pub_date',
             'author',
         )
@@ -145,7 +133,6 @@ class TitleCreateSerializer(serializers.ModelSerializer):
         many=False,
         slug_field='slug',
         queryset=Category.objects.all(),)
-    
 
     class Meta:
         model = Title
