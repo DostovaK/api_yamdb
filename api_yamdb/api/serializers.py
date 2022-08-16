@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
-
+from rest_framework.validators import UniqueTogetherValidator
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -38,7 +38,7 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+"""class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username', read_only=True
     )
@@ -68,7 +68,104 @@ class ReviewSerializer(serializers.ModelSerializer):
         ).exists()
         if self.context['request'].method == 'POST' and is_review_exists:
             raise serializers.ValidationError('Повторный отзыв невозможен')
+        return data"""
+
+"""class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True
+    )
+    score = serializers.IntegerField(min_value=1, max_value=10)
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = (
+            'id',
+            'pub_date',
+            'author',
+        )
+        model = Review
+        validators = [UniqueTogetherValidator(
+            queryset=Review.objects.all(), fields=['author', 'title'])]
+
+    def validate(self, data):
+        if self.context.get('request').user == data:
+            raise serializers.ValidationError('На себя подписаться нельзя')
         return data
+
+    def validate1(self, data):
+        title_id = self.context['view'].kwargs.get('title_id')
+        user = self.context['request'].user
+        is_review_exists = Review.objects.filter(
+            title=title_id,
+            author=user
+        ).exists()
+        if self.context['request'].method == 'POST' and is_review_exists:
+            raise serializers.ValidationError('Повторный отзыв невозможен')
+        return data"""
+
+
+"""class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True
+    )
+    score = serializers.IntegerField(min_value=1, max_value=10)
+
+    class Meta:
+        fields = (
+            'id',
+            'pub_date',
+            'author',
+            'text',
+            'score',
+        )
+        read_only_fields = (
+            'id',
+            'pub_date',
+            'author',
+        )
+        model = Review
+
+    def validate(self, data):
+        title_id = self.context['view'].kwargs.get('title_id')
+        user = self.context['request'].user
+        is_review_exists = Review.objects.filter(
+            title=title_id,
+            author=user
+        ).exists()
+        if self.context['request'].method == 'POST' and is_review_exists:
+            validator = UniqueTogetherValidator(queryset=Review.objects.all(), fields=('title', 'author'))
+            validator.set_context(self)
+            validator (data)"""
+
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True
+    )
+    score = serializers.IntegerField(min_value=1, max_value=10)
+
+    class Meta:
+        fields = '__all__'
+        #read_only_fields = (
+            #'id',
+            #'pub_date',
+            #'author',)
+        model = Review
+        validators = [UniqueTogetherValidator(
+            queryset=Review.objects.all(), fields=['author', 'title'])]
+
+    """def validate(self, data):
+        title_id = self.context['view'].kwargs.get('title_id')
+        user = self.context['request'].user
+        is_review_exists = Review.objects.filter(
+            title=title_id,
+            author=user
+        ).exists()
+        if self.context['request'].method == 'POST' and is_review_exists:
+            validator = UniqueTogetherValidator(queryset=Review.objects.all(), fields=('title', 'author'))
+            validator.set_context(self)
+            validator(data)"""
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -186,3 +283,35 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
             'category',
             'rating',
         )
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True
+    )
+    score = serializers.IntegerField(min_value=1, max_value=10)
+
+    class Meta:
+        fields = (
+            'id',
+            'pub_date',
+            'author',
+            'text',
+            'score',
+        )
+        read_only_fields = (
+            'id',
+            'pub_date',
+            'author',
+        )
+        model = Review
+
+    def validate(self, data):
+        title_id = self.context['view'].kwargs.get('title_id')
+        user = self.context['request'].user
+        is_review_exists = Review.objects.filter(
+            title=title_id,
+            author=user
+        ).exists()
+        if self.context['request'].method == 'POST' and is_review_exists:
+            raise serializers.ValidationError('Повторный отзыв невозможен')
+        return data
