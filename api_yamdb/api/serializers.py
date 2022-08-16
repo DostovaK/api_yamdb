@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -58,6 +59,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             'author',
         )
         model = Review
+        validatprs = [UniqueTogetherValidator(
+            queryset=Review.objects.all(), fields=['author', 'title'])]
 
     def validate(self, data):
         title_id = self.context['view'].kwargs.get('title_id')
