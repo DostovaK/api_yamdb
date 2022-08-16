@@ -59,6 +59,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             'author',
         )
         model = Review
+        validatprs = [UniqueTogetherValidator(
+            queryset=Review.objects.all(), fields=['author', 'title'])]
 
     def validate(self, data):
         title_id = self.context['view'].kwargs.get('title_id')
