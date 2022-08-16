@@ -1,9 +1,7 @@
 from api.filters import TitleFilter
 from api.mixins import CategoryGenreModelMixin, TitleModelMixin
-from api.permission import (IsAdminOrReadOnly,
-                            IsAdminPermission,
-                            IsAuthorOrReadOnly,
-                            IsModeratorOrReadOnly)
+from api.permission import (IsAdminModeratorOwnerOrReadOnly, IsAdminOrReadOnly,
+                            IsAdminPermission, IsAuthorOrReadOnly, IsModeratorOrReadOnly)
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, ReadOnlyTitleSerializer,
                              ReviewSerializer, SingUpSerializer,
@@ -29,11 +27,7 @@ from users.models import User
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    # permission_classes = [IsAdminModeratorOwnerOrReadOnly]
-    permission_classes = [
-        IsAuthenticatedOrReadOnly,
-        (IsAdminOrReadOnly | IsModeratorOrReadOnly | IsAuthorOrReadOnly)
-    ]
+    permission_classes = [IsAdminModeratorOwnerOrReadOnly]
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
@@ -47,8 +41,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [
-        IsAuthenticatedOrReadOnly,
-        (IsAdminOrReadOnly | IsModeratorOrReadOnly | IsAuthorOrReadOnly)
+        IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly | IsModeratorOrReadOnly | IsAdminOrReadOnly
     ]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
