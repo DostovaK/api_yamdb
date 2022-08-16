@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -69,6 +70,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         if self.context['request'].method == 'POST' and is_review_exists:
             raise serializers.ValidationError('Повторный отзыв невозможен')
         return data
+
+
+
 
 
 class CommentSerializer(serializers.ModelSerializer):
