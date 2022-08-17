@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from api.default import CurrentTitleDefault
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 from rest_framework.validators import UniqueTogetherValidator
@@ -41,35 +42,26 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        slug_field='username', read_only=True
-    )
+        slug_field='username', read_only=True,
+        default=serializers.CurrentUserDefault())
+    title = serializers.HiddenField(default=CurrentTitleDefault())
     score = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
-        fields = (
-            'id',
-            'pub_date',
-            'author',
-            'text',
-            'score',
-        )
+        fields = '__all__'
         read_only_fields = (
             'id',
             'pub_date',
             'author',
         )
         model = Review
-
-    def validate(self, data):
-        title_id = self.context['view'].kwargs.get('title_id')
-        user = self.context['request'].user
-        is_review_exists = Review.objects.filter(
-            title=title_id,
-            author=user
-        ).exists()
-        if self.context['request'].method == 'POST' and is_review_exists:
-            raise serializers.ValidationError('Повторный отзыв невозможен')
-        return data
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=['author', 'title'],
+                message=('Повторный отзыв невозможен')
+            )
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
