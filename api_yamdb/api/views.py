@@ -23,13 +23,14 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
+from rest_framework import serializers
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [
         IsAuthenticatedOrReadOnly,
         IsAuthorOrReadOnly | IsModeratorOrReadOnly | IsAdminOrReadOnly
+        
     ]
     pagination_class = PageNumberPagination
 
@@ -38,8 +39,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        serializer.save(author=self.request.user, title=title)
+       title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+       serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
