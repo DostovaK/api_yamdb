@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from api.default import CurrentTitleDefault
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import User
 from rest_framework.validators import UniqueTogetherValidator
 
 
@@ -42,13 +41,22 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        slug_field='username', read_only=True,
-        default=serializers.CurrentUserDefault())
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
     title = serializers.HiddenField(default=CurrentTitleDefault())
     score = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id',
+            'pub_date',
+            'author',
+            'text',
+            'score',
+            'title',
+        )
         read_only_fields = (
             'id',
             'pub_date',
@@ -82,58 +90,6 @@ class CommentSerializer(serializers.ModelSerializer):
             'author',
         )
         model = Comment
-
-
-class SingUpSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ('email', 'username', )
-
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                'Использовать имя "me" в качестве username запрещено!'
-            )
-        return value
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    confirmation_code = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ('username', 'confirmation_code', )
-
-
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'first_name',
-            'last_name',
-            'email',
-            'bio',
-            'role',
-        )
-
-
-class UserRoleSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role',
-        )
-        read_only_fields = ('role', )
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
